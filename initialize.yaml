@@ -4,7 +4,7 @@
   become: yes
   become_method: sudo
   vars:
-    sshdconfig: sshd_config
+    sshdconfig: /etc/ssh/sshd_config
     ClientAliveInterval: 300
     ClientAliveCountMax: 3
     LoginGraceTime: 60
@@ -16,7 +16,7 @@
     selinuxfile: /etc/selinux/config
     selinux: "disabled"
 
-    pwquality: pwquality.conf
+    pwquality: /etc/security/pwquality.conf
     minlen: 10
     minclass: 1
     maxrepeat: 0
@@ -26,13 +26,13 @@
     dcredit: -1
     ocredit: -1
 
-    logindefsfile: login.defs
+    logindefsfile: /etc/login.defs
     pass_max_days: 90
     pass_min_days: 0
     pass_min_len: 10
     pass_warn_age: 7
 
-    useraddfile: useradd
+    useraddfile: /etc/default/useradd
     inactive: 0
 
   tasks:
