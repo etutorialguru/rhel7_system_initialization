@@ -1,0 +1,131 @@
+---
+- name: modify sshdconfig on remote machine
+  hosts: web
+  become: yes
+  become_method: sudo
+  vars:
+    sshdconfig: sshd_config
+    ClientAliveInterval: 300
+    ClientAliveCountMax: 3
+    LoginGraceTime: 60
+    PermitUserEnvironment: "no"
+    MaxAuthTries: 3
+    PermitEmptyPasswords: "no"
+    Banner: /etc/ssh/sshd-banner
+
+    selinuxfile: /etc/selinux/config
+    selinux: "disabled"
+
+    pwquality: pwquality.conf
+    minlen: 10
+    minclass: 1
+    maxrepeat: 0
+    maxclassrepeat: 0
+    lcredit: -1
+    ucredit: -1
+    dcredit: -1
+    ocredit: -1
+
+    logindefsfile: login.defs
+    pass_max_days: 90
+    pass_min_days: 0
+    pass_min_len: 10
+    pass_warn_age: 7
+
+    useraddfile: useradd
+    inactive: 0
+
+  tasks:
+    - name: Modify ClientAliveInterval
+      lineinfile: dest="{{ sshdconfig }}" regexp="^[#]*ClientAliveInterval" line="ClientAliveInterval {{ ClientAliveInterval }}" state=present
+    - name: Modify ClientAliveCountMax
+      lineinfile: dest="{{ sshdconfig }}" regexp="^[#]*ClientAliveCountMax" line="ClientAliveCountMax {{ ClientAliveCountMax }}" state=present
+    - name: Modify LoginGraceTime
+      lineinfile: dest="{{ sshdconfig }}" regexp="^[#]*LoginGraceTime" line="LoginGraceTime {{ LoginGraceTime }}" state=present
+    - name: Modify PermitUserEnvironment
+      lineinfile: dest="{{ sshdconfig }}" regexp="^[#]*PermitUserEnvironment" line="PermitUserEnvironment {{ PermitUserEnvironment }}" state=present
+    - name: Modify MaxAuthTries
+      lineinfile: dest="{{ sshdconfig }}" regexp="^[#]*MaxAuthTries" line="MaxAuthTries {{ MaxAuthTries }}" state=present
+    - name: Modify PermitEmptyPasswords
+      lineinfile: dest="{{ sshdconfig }}" regexp="^[#]*PermitEmptyPasswords" line="PermitEmptyPasswords {{ PermitEmptyPasswords }}" state=present
+    - name: Modify Banner
+      lineinfile: dest="{{ sshdconfig }}" regexp="^[#]*Banner" line="Banner {{ Banner }}" state=present
+    - name: creating file sshd-banner if not present
+      file: path=/etc/ssh/sshd-banner state=touch mode=0644 owner=root group=wheel
+    - name: adding content to sshd-banner
+      copy: src=ssh-banner.j2 dest=/etc/ssh/sshd-banner
+    - name: Restart ssh
+      service: name=sshd state=restarted
+
+    - name: disable selinux
+      lineinfile: dest="{{ selinuxfile }}" regexp="^[#]*SELINUX=" line="SELINUX={{ selinux }}" state=present
+
+    - name : Modify minlen in pwquality.conf
+      lineinfile: dest="{{ pwquality }}" regexp="^[#][ ]*minlen" line="minlen = {{ minlen }}" state=present
+    - name: Modify minclass in pwquality.conf
+      lineinfile: dest="{{ pwquality }}" regexp="^[#][ ]*minclass" line="minclass = {{ minclass }}" state=present
+    - name: Modify maxrepeat in pwquality.conf
+      lineinfile: dest="{{ pwquality }}" regexp="^[#][ ]*maxrepeat" line="maxrepeat {{ maxrepeat }}" state=present
+    - name: Modify maxclassrepeat in pwquality.conf
+      lineinfile: dest="{{ pwquality }}" regexp="^[#][ ]*maxclassrepeat" line="maxclassrepeat = {{ maxclassrepeat }}" state=present
+    - name: Modify lcredit in pwquality.conf
+      lineinfile: dest="{{ pwquality }}" regexp="^[#][ ]*lcredit" line="lcredit = {{ lcredit }}" state=present
+    - name: Modify ucredit in pwquality.conf
+      lineinfile: dest="{{ pwquality }}" regexp="^[#][ ]*ucredit" line="ucredit = {{ ucredit }}" state=present
+    - name: Modify dcredit in pwquality.conf
+      lineinfile: dest="{{ pwquality }}" regexp="^[#][ ]*dcredit" line="dcredit = {{ dcredit }}" state=present
+    - name: Modify ocredit in pwquality.conf
+      lineinfile: dest="{{ pwquality }}" regexp="^[#][ ]*ocredit" line="ocredit = {{ ocredit }}" state=present
+
+    - name: Modify ocredit in login.defs
+      lineinfile: dest="{{ logindefsfile }}" regexp="^[#]*PASS_MAX_DAYS" line="PASS_MAX_DAYS = {{ pass_max_days }}" state=present
+    - name: Modify ocredit in pwquality.conf
+      lineinfile: dest="{{ logindefsfile }}" regexp="^[#]*PASS_MIN_DAYS" line="PASS_MIN_DAYS {{ pass_min_days }}" state=present
+    - name: Modify ocredit in pwquality.conf
+      lineinfile: dest="{{ logindefsfile }}" regexp="^[#]*PASS_MIN_LEN" line="PASS_MIN_LEN {{ pass_min_len }}" state=present
+    - name: Modify ocredit in pwquality.conf
+      lineinfile: dest="{{ logindefsfile }}" regexp="^[#]*PASS_WARN_AGE" line="PASS_WARN_AGE {{ pass_warn_age }}" state=present
+
+    - name: Modify ocredit in useradd
+      lineinfile: dest="{{ useraddfile }}" regexp="^[#]*INACTIVE" line="INACTIVE={{ inactive }}" state=present
+
+    - name: adding content to sysctl.conf file
+      blockinfile:
+        path: /etc/sysctl.conf
+        block: |
+          net.ipv4.ip_forward = 0
+          net.ipv4.conf.all.send_redirects = 0
+          net.ipv4.conf.default.send_redirects = 0
+          net.ipv4.conf.all.accept_source_route = 0
+          net.ipv4.conf.default.accept_source_route = 0
+          net.ipv4.conf.all.accept_redirects = 0
+          net.ipv4.conf.default.accept_redirects = 0
+          net.ipv4.conf.all.log_martians = 1
+          net.ipv4.conf.default.log_martians = 1
+          net.ipv4.icmp_echo_ignore_broadcasts = 1
+          net.ipv4.icmp_ignore_bogus_error_responses = 1
+          net.ipv4.conf.all.rp_filter = 1
+          net.ipv4.conf.default.rp_filter = 1
+          net.ipv4.conf.all.rp_filter = 1
+          net.ipv4.conf.default.rp_filter = 1
+          net.ipv4.tcp_syncookies = 1
+          net.ipv6.conf.all.disable_ipv6 = 1
+          net.ipv6.conf.default.disable_ipv6 = 1
+        backup: yes
+
+    - name: enable history timestamp
+      blockinfile:
+        path: /etc/profile.d/historytimestamp.sh
+        create: yes
+        block: |
+          export HISTTIMEFORMAT="%d/%m/%y %T"
+
+    - name: install sysstat
+      yum:
+        name: sysstat
+        state: latest
+    - name: start and enable sysstat
+      service:
+        name: sysstat
+        state: started
+        enabled: yes
