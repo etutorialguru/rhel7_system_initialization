@@ -77,16 +77,16 @@
     - name: Modify ocredit in pwquality.conf
       lineinfile: dest="{{ pwquality }}" regexp="^[#][ ]*ocredit" line="ocredit = {{ ocredit }}" state=present
 
-    - name: Modify ocredit in login.defs
+    - name: Modify PASS_MAX_DAYS in login.defs
       lineinfile: dest="{{ logindefsfile }}" regexp="^[#]*PASS_MAX_DAYS" line="PASS_MAX_DAYS = {{ pass_max_days }}" state=present
-    - name: Modify ocredit in pwquality.conf
+    - name: Modify PASS_MIN_DAYS in login.defs
       lineinfile: dest="{{ logindefsfile }}" regexp="^[#]*PASS_MIN_DAYS" line="PASS_MIN_DAYS {{ pass_min_days }}" state=present
-    - name: Modify ocredit in pwquality.conf
+    - name: Modify PASS_MIN_LEN in login.defs
       lineinfile: dest="{{ logindefsfile }}" regexp="^[#]*PASS_MIN_LEN" line="PASS_MIN_LEN {{ pass_min_len }}" state=present
-    - name: Modify ocredit in pwquality.conf
+    - name: Modify PASS_WARN_AGE inlogin.defs
       lineinfile: dest="{{ logindefsfile }}" regexp="^[#]*PASS_WARN_AGE" line="PASS_WARN_AGE {{ pass_warn_age }}" state=present
 
-    - name: Modify ocredit in useradd
+    - name: Modify INACTIVE in useradd
       lineinfile: dest="{{ useraddfile }}" regexp="^[#]*INACTIVE" line="INACTIVE={{ inactive }}" state=present
 
     - name: adding content to sysctl.conf file
