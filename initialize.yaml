@@ -1,6 +1,6 @@
 ---
 - name: modify sshdconfig on remote machine
-  hosts: web
+  hosts: all
   become: yes
   become_method: sudo
   vars:
