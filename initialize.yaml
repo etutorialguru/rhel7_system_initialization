@@ -175,4 +175,5 @@
         state: absent
         
     - name: reboot the system
-      command: reboot
+      reboot:
+        reboot_timeout: 1800
